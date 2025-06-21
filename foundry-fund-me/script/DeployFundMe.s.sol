@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.8;
+
+import {Script} from "forge-std/Script.sol";
+import {FundMe} from "../src/FundMe.sol";
+
+contract DeployFundMe is Script {
+    function run() external {
+        vm.startBroadcast();
+        new FundMe(0x89Fe3AA7844D3954846003AB3284f3D3320f0a1E);
+        vm.stopBroadcast();
+    }
+}
