@@ -3,7 +3,8 @@ pragma solidity ^0.8.8;
 
 import {PriceConverter} from "./PriceConverter.sol";
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+import {AggregatorV3Interface} from "@chainlink/contracts/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+
 contract FundMe is Ownable {
     using PriceConverter for uint256;
 
@@ -13,12 +14,27 @@ contract FundMe is Ownable {
     mapping(address => uint256) public fundersAndMoney;
 
     uint256 public getMinimumDeposit;
-    constructor(address initialOwner) Ownable(initialOwner) {
-        getMinimumDeposit = (1e36 * 5) / PriceConverter.getPrice();
+
+    AggregatorV3Interface private s_pricefeed;
+
+    constructor(address initialOwner, address priceFeed) Ownable(initialOwner) {
+        s_pricefeed = AggregatorV3Interface(priceFeed);
+        getMinimumDeposit =
+            (1e36 * 5) /
+            PriceConverter.getPrice(
+                AggregatorV3Interface(address(s_pricefeed))
+            );
+    }
+
+    function getVersion() public view returns (uint256) {
+        return s_pricefeed.version();
     }
 
     function fund() public payable {
-        require(msg.value.getConversionRate() >= MINUSD, "Not enough eth!");
+        require(
+            msg.value.getConversionRate(s_pricefeed) >= MINUSD,
+            "Not enough eth!"
+        );
         funders.push(msg.sender);
         fundersAndMoney[msg.sender] += msg.value;
     }
