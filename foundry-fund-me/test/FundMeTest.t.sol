@@ -17,4 +17,9 @@ contract FundMeTest is Test {
         console.log(version);
         assertEq(version, 4);
     }
+
+    function test2() public {
+        uint256 price = fundMe.getPriceFundMe();
+        console.log(price);
+    }
 }

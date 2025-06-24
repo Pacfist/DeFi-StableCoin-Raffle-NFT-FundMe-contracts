@@ -62,6 +62,13 @@ contract FundMe is Ownable {
         return address(this).balance;
     }
 
+    function getPriceFundMe() public view returns (uint256) {
+        return
+            PriceConverter.getPrice(
+                AggregatorV3Interface(address(s_pricefeed))
+            );
+    }
+
     receive() external payable {
         fund();
     }
