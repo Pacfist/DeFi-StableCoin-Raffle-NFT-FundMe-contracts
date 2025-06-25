@@ -2,6 +2,7 @@
 pragma solidity ^0.8.8;
 import {Script} from "forge-std/Script.sol";
 import {FundMe} from "../src/FundMe.sol";
+import {MockV3Aggregator} from "../test/mocks/MockV3Aggregator.sol";
 
 contract HelperConfig is Script {
     NetworkConfig public activeNetworkConfig;
@@ -38,8 +39,17 @@ contract HelperConfig is Script {
         // NetworkConfig memory anvilConfig = NetworkConfig({
         //     priceFeed: 0x694AA1769357215DE4FAC081bf1f309aDC325301
         // });
-
+        if (activeNetworkConfig.priceFeed != address(0)) {
+            return activeNetworkConfig;
+        }
         vm.startBroadcast();
+        MockV3Aggregator mokv3Aggregator = new MockV3Aggregator(8, 2000e8);
         vm.stopBroadcast();
+
+        NetworkConfig memory anvilConfig = NetworkConfig({
+            priceFeed: address(mokv3Aggregator)
+        });
+
+        return anvilConfig;
     }
 }
