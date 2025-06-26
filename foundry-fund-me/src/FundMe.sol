@@ -8,31 +8,32 @@ import {AggregatorV3Interface} from "@chainlink/contracts/v0.8/shared/interfaces
 contract FundMe is Ownable {
     using PriceConverter for uint256;
 
-    uint256 public constant MINUSD = 5 * (10 ** 18);
+    uint256 public constant MINUSD = 5 * 1e18;
 
     address[] public funders;
     mapping(address => uint256) public fundersAndMoney;
 
-    uint256 public getMinimumDeposit;
-
-    AggregatorV3Interface private s_pricefeed;
+    AggregatorV3Interface private immutable i_pricefeed;
 
     constructor(address initialOwner, address priceFeed) Ownable(initialOwner) {
-        s_pricefeed = AggregatorV3Interface(priceFeed);
-        getMinimumDeposit =
-            (1e36 * 5) /
+        i_pricefeed = AggregatorV3Interface(priceFeed);
+    }
+
+    function getMinimumDeposit() public view returns (uint256) {
+        return
+            (MINUSD * 1e18) /
             PriceConverter.getPrice(
-                AggregatorV3Interface(address(s_pricefeed))
+                AggregatorV3Interface(address(i_pricefeed))
             );
     }
 
     function getVersion() public view returns (uint256) {
-        return s_pricefeed.version();
+        return i_pricefeed.version();
     }
 
     function fund() public payable {
         require(
-            msg.value.getConversionRate(s_pricefeed) >= MINUSD,
+            msg.value.getConversionRate(i_pricefeed) >= MINUSD,
             "Not enough eth!"
         );
         funders.push(msg.sender);
@@ -40,7 +41,8 @@ contract FundMe is Ownable {
     }
 
     function withdraw() public onlyOwner {
-        for (uint256 i = 0; i < funders.length; i++) {
+        uint256 fundersLenght = funders.length;
+        for (uint256 i = 0; i < fundersLenght; i++) {
             address funder = funders[i];
             fundersAndMoney[funder] = 0;
         }
@@ -65,7 +67,7 @@ contract FundMe is Ownable {
     function getPriceFundMe() public view returns (uint256) {
         return
             PriceConverter.getPrice(
-                AggregatorV3Interface(address(s_pricefeed))
+                AggregatorV3Interface(address(i_pricefeed))
             );
     }
 
