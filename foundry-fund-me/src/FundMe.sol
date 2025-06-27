@@ -19,6 +19,10 @@ contract FundMe is Ownable {
         i_pricefeed = AggregatorV3Interface(priceFeed);
     }
 
+    function getFunder(uint256 _index) public view returns (address) {
+        return funders[_index];
+    }
+
     function getMinimumDeposit() public view returns (uint256) {
         return
             (MINUSD * 1e18) /
