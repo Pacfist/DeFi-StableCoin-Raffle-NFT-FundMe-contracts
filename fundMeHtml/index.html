@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>FundMe DApp</title>
+</head>
+
+<body>
+    <h1>Fund Me Contract</h1>
+
+    <button onclick="connect()">Connect Wallet</button><br><br>
+
+    <input id="ethAmount" placeholder="Enter ETH amount (e.g. 0.01)" />
+    <button onclick="fund()">Fund</button><br><br>
+
+    <button onclick="withdraw()">Withdraw (Owner only)</button><br><br>
+
+    <button onclick="getMinimum()">Check Minimum Deposit</button>
+    <p id="minimumResult"></p>
+
+    <p id="status"></p>
+
+    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
+    <script src="./script.js"></script>
+</body>
+
+</html>
