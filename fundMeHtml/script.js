@@ -241,7 +241,12 @@ const contractAddress = "0x1BcdC73D751b1386d3E7bCf2959BB56Ac65F5CcF"; // Replace
 let provider;
 let signer;
 let contract;
-
+if (window.ethereum) {
+    window.ethereum.on("accountsChanged", () => {
+        // Reconnect with the new account
+        connect();
+    });
+}
 window.addEventListener("DOMContentLoaded", () => {
     const connectButton = document.getElementById("connectBtn");
     connectButton.onclick = connect;
@@ -252,6 +257,7 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("fundBtn").onclick = fund;
     document.getElementById("balanceBtn").onclick = getBalance;
     document.getElementById("withdrawBtn").onclick = withdraw;
+    document.getElementById("priceBtn").onclick = getPrice;
 
 
     console.log(2);
@@ -263,7 +269,9 @@ async function connect() {
         await provider.send("eth_requestAccounts", []);
         signer = provider.getSigner();
         contract = new ethers.Contract(contractAddress, abi, signer);
-        document.getElementById("status").innerText = "Connected";
+
+        const userAddress = await signer.getAddress();
+        document.getElementById("status").innerText = `Connected: ${userAddress}`;
     } else {
         alert("Please install MetaMask");
     }
@@ -280,6 +288,19 @@ async function fund() {
     } catch (err) {
         console.error(err);
         alert("Funding failed.");
+    }
+}
+
+async function getPrice() {
+    if (!contract) return alert("Connect wallet first");
+
+    try {
+        const rawPrice = await contract.getPriceFundMe(); // BigNumber
+        const ethUsd = ethers.utils.formatUnits(rawPrice, 18); // Format with 18 decimals
+        document.getElementById("priceInfo").innerText = `ETH/USD Price: $${ethUsd}`;
+    } catch (err) {
+        console.error("Failed to fetch price", err);
+        document.getElementById("priceInfo").innerText = "Error fetching price.";
     }
 }
 
