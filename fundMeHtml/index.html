@@ -1,28 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <meta charset="UTF-8" />
     <title>FundMe DApp</title>
 </head>
 
 <body>
-    <h1>Fund Me Contract</h1>
+    <h1>FundMe Contract</h1>
 
-    <button onclick="connect()">Connect Wallet</button><br><br>
+    <button id="connectBtn">Connect Wallet</button>
+    <p id="status">Not connected</p>
 
-    <input id="ethAmount" placeholder="Enter ETH amount (e.g. 0.01)" />
-    <button onclick="fund()">Fund</button><br><br>
+    <button id="minDep">Get min dep</button>
+    <p id="minDepInfo"></p>
 
-    <button onclick="withdraw()">Withdraw (Owner only)</button><br><br>
+    <h2>Fund Contract</h2>
+    <input type="text" id="ethAmount" placeholder="Amount in ETH" />
+    <button id="fundBtn">Send Funds</button>
 
-    <button onclick="getMinimum()">Check Minimum Deposit</button>
-    <p id="minimumResult"></p>
+    <h2>Contract Info</h2>
+    <button id="balanceBtn">Get Contract Balance</button>
+    <p id="balance"></p>
 
-    <p id="status"></p>
+    <h2>Withdraw (Owner only)</h2>
+    <button id="withdrawBtn">Withdraw</button>
+    <p id="withdrawStatus"></p>
 
-    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
-    <script src="./script.js"></script>
+    <!-- <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script> -->
+    <script src="script.js" type="module" defer></script>
 </body>
 
 </html>
