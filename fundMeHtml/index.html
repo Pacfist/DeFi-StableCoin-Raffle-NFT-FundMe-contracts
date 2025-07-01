@@ -1,35 +1,97 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8" />
     <title>FundMe DApp</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 40px;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #222;
+        }
+
+        .container {
+            max-width: 500px;
+            background-color: white;
+            margin: auto;
+            padding: 30px 40px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        button {
+            background-color: #3f51b5;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #303f9f;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        p {
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        h2 {
+            margin-top: 30px;
+            font-size: 20px;
+            color: #444;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>FundMe Contract</h1>
+    <div class="container">
+        <h1>FundMe Contract</h1>
 
-    <button id="connectBtn">Connect Wallet</button>
-    <p id="status">Not connected</p>
+        <button id="connectBtn">Connect Wallet</button>
+        <p id="status">Not connected</p>
 
-    <button id="minDep">Get min dep</button>
-    <p id="minDepInfo"></p>
+        <button id="minDep">Get Minimum Deposit</button>
+        <p id="minDepInfo"></p>
 
-    <h2>Fund Contract</h2>
-    <input type="text" id="ethAmount" placeholder="Amount in ETH" />
-    <button id="fundBtn">Send Funds</button>
+        <h2>Fund Contract</h2>
+        <input type="text" id="ethAmount" placeholder="Amount in ETH" />
+        <button id="fundBtn">Send Funds</button>
 
-    <h2>Contract Info</h2>
-    <button id="balanceBtn">Get Contract Balance</button>
-    <p id="balance"></p>
+        <h2>Contract Info</h2>
+        <button id="balanceBtn">Get Contract Balance</button>
+        <p id="balance"></p>
 
-    <h2>Withdraw (Owner only)</h2>
-    <button id="withdrawBtn">Withdraw</button>
-    <p id="withdrawStatus"></p>
+        <h2>Withdraw (Owner only)</h2>
+        <button id="withdrawBtn">Withdraw</button>
+        <p id="withdrawStatus"></p>
 
-    <button id="priceBtn">Get ETH/USD Price</button>
-    <p id="priceInfo"></p>
+        <button id="priceBtn">Get ETH/USD Price</button>
+        <p id="priceInfo"></p>
+    </div>
 
-    <!-- <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script> -->
     <script src="script.js" type="module" defer></script>
 </body>
 
