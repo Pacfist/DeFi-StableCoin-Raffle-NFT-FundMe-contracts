@@ -17,6 +17,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     address payable[] private players;
     bytes32 private immutable i_keyHash;
     uint256 private immutable i_subscriptionId;
+    uint32 private immutable i_callbackGasLimit;
     mapping(address => uint256) public senderToAmount;
 
     event RaffleEnter(address indexed player);
@@ -26,13 +27,15 @@ contract Raffle is VRFConsumerBaseV2Plus {
         uint256 _interval,
         address _vrfCoordinator,
         bytes32 _gasLane,
-        uint256 _subscriptionId
+        uint256 _subscriptionId,
+        uint32 _callbackGasLimit
     ) VRFConsumerBaseV2Plus(_vrfCoordinator) {
         i_entranceFee = _entranceFee;
         i_interval = _interval;
         lastTimeStamp = block.timestamp;
         i_keyHash = _gasLane;
         i_subscriptionId = _subscriptionId;
+        i_callbackGasLimit = _callbackGasLimit;
     }
 
     function enterRaffle() public payable {
@@ -55,7 +58,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
                 keyHash: i_keyHash, // Gas lane / key hash to use
                 subId: i_subscriptionId, // Subscription ID or 0 for direct funding
                 requestConfirmations: 3, // Recommended: at least 3
-                callbackGasLimit: 100000, // Adjust as needed for your callback
+                callbackGasLimit: i_callbackGasLimit, // Adjust as needed for your callback
                 numWords: 1, // Number of random words to request
                 extraArgs: VRFV2PlusClient._argsToBytes(
                     VRFV2PlusClient.ExtraArgsV1({
