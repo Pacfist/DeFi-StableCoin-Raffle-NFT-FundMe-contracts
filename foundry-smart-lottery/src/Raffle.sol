@@ -12,6 +12,11 @@ contract Raffle is VRFConsumerBaseV2Plus {
     error NotEnoughtEthSent();
     error TransferFailed();
     error RaffleNotOpen();
+    error UpkeepNotNeeded(
+        uint256 balance,
+        uint256 playersLength,
+        uint256 state
+    );
 
     enum STATUS {
         OPEN,
@@ -64,7 +69,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     }
 
     function checkUpkeep(
-        bytes calldata /* checkData */
+        bytes memory /* checkData */
     ) public view returns (bool upkeepNeeded, bytes memory /* performData */) {
         bool timeHasPassed = (block.timestamp - lastTimeStamp) >= i_interval;
         bool isOpen = s_lotteryState == STATUS.OPEN;
@@ -74,12 +79,18 @@ contract Raffle is VRFConsumerBaseV2Plus {
         return (upkeepNeeded, hex"");
     }
 
-    function performUpkeep() public {
-        if (block.timestamp - lastTimeStamp < i_interval) {
-            revert();
+    function performUpkeep(bytes calldata /*perofrmData*/) external {
+        (bool upkeepNeeded, ) = checkUpkeep("");
+        if (!upkeepNeeded) {
+            revert UpkeepNotNeeded(
+                address(this).balance,
+                players.length,
+                uint256(s_lotteryState)
+            );
         }
         s_lotteryState = STATUS.CALCULATING;
-        uint256 requestID = s_vrfCoordinator.requestRandomWords(
+        // uint256 requestID =
+        s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
                 keyHash: i_keyHash, // Gas lane / key hash to use
                 subId: i_subscriptionId, // Subscription ID or 0 for direct funding
@@ -100,7 +111,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     }
 
     function fulfillRandomWords(
-        uint256 requestId,
+        uint256 /*requestId*/,
         uint256[] calldata randomWords
     ) internal override {
         uint256 indexOfWinner = randomWords[0] % players.length;
