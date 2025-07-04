@@ -15,9 +15,18 @@ contract RaffleTest is Test {
     function setUp() external {
         DeploySL deployer = new DeploySL();
         (raffle, helper) = deployer.deployContract();
+        vm.deal(USER1, 10 ether);
     }
 
     function testRaffleOpenState() public view {
         assert(raffle.getState() == Raffle.STATUS.OPEN);
+    }
+
+    function testEnterRaffle() public {
+        vm.prank(USER1);
+
+        raffle.enterRaffle{value: 1000000000000000000}();
+        console.log(raffle.getPlayers()[0]);
+        assert(raffle.getPlayers()[0] == USER1);
     }
 }
