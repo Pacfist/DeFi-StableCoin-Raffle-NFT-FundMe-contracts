@@ -13,12 +13,9 @@ contract DeploySL is Script, CreateSubscription {
     function deployContract() public returns (Raffle, HelperConfig) {
         HelperConfig helperConfig = new HelperConfig();
         HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
-        uint256 subID;
 
         if (config.subscriptionId == 0) {
-            (subID, ) = CreateSubscription.createSub();
-        } else {
-            subID = config.subscriptionId;
+            (config.subscriptionId, ) = CreateSubscription.createSub();
         }
 
         vm.startBroadcast();
@@ -27,7 +24,7 @@ contract DeploySL is Script, CreateSubscription {
             config.interval,
             config.vrfCoordinator,
             config.gasLane,
-            subID,
+            config.subscriptionId,
             config.callbackGasLimit
         );
         vm.stopBroadcast();

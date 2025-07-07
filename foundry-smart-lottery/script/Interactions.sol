@@ -19,3 +19,10 @@ contract CreateSubscription is Script {
         return (subId, vrfCoordinator);
     }
 }
+
+contract FundSus is Script {
+    function fundSub() public {
+        HelperConfig helperConfig = new HelperConfig();
+        address vrfCoordinator = helperConfig.getConfig().vrfCoordinator;
+    }
+}
