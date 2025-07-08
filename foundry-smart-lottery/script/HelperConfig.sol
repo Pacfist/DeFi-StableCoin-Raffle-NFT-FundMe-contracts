@@ -3,6 +3,8 @@ pragma solidity ^0.8.8;
 
 import {Script} from "forge-std/Script.sol";
 import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
+import {LinkToken} from "../test/LinkToken.sol";
+
 abstract contract Constants {
     uint96 public constant MOCK_BASE_FEE = 0.25 ether;
     uint96 public constant MOCK_GAS_PRICE_LINK = 1e9;
@@ -51,7 +53,7 @@ contract HelperConfig is Script, Constants {
                 interval: 30,
                 vrfCoordinator: 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B,
                 gasLane: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
-                subscriptionId: 0,
+                subscriptionId: 7679411351600780301149911877661372214661410357691824210932701096407150720747,
                 callbackGasLimit: 500000,
                 link: 0x779877A7B0D9E8603169DdbD7836e478b4624789
             });
@@ -64,7 +66,7 @@ contract HelperConfig is Script, Constants {
                 interval: 30,
                 vrfCoordinator: 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B,
                 gasLane: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
-                subscriptionId: 0,
+                subscriptionId: 7679411351600780301149911877661372214661410357691824210932701096407150720747,
                 callbackGasLimit: 500000,
                 link: 0x514910771AF9Ca656af840dff83E8264EcF986CA
             });
@@ -81,6 +83,7 @@ contract HelperConfig is Script, Constants {
             MOCK_GAS_PRICE_LINK,
             MOCK_WEI_PER_UINT_LINK
         );
+        LinkToken linkToken = new LinkToken();
         vm.stopBroadcast();
 
         localNetworkConfig = NetworkConfig({
@@ -90,7 +93,7 @@ contract HelperConfig is Script, Constants {
             gasLane: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
             subscriptionId: 0,
             callbackGasLimit: 500000,
-            link: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+            link: address(linkToken)
         });
 
         return localNetworkConfig;
