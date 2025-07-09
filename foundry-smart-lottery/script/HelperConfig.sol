@@ -10,6 +10,9 @@ abstract contract Constants {
     uint96 public constant MOCK_GAS_PRICE_LINK = 1e9;
     // LINK / ETH price
     int256 public constant MOCK_WEI_PER_UINT_LINK = 4e15;
+
+    address public constant FOUNDRY_DEFAULT_SENDER =
+        0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 }
 contract HelperConfig is Script, Constants {
     error HelperConfig__InvalidChainId();
@@ -22,6 +25,7 @@ contract HelperConfig is Script, Constants {
         uint256 subscriptionId;
         uint32 callbackGasLimit;
         address link;
+        address account;
     }
     NetworkConfig public localNetworkConfig;
     mapping(uint256 chainId => NetworkConfig) public networkConfig;
@@ -55,7 +59,8 @@ contract HelperConfig is Script, Constants {
                 gasLane: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
                 subscriptionId: 7679411351600780301149911877661372214661410357691824210932701096407150720747,
                 callbackGasLimit: 500000,
-                link: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+                link: 0x779877A7B0D9E8603169DdbD7836e478b4624789,
+                account: FOUNDRY_DEFAULT_SENDER
             });
     }
 
@@ -68,7 +73,8 @@ contract HelperConfig is Script, Constants {
                 gasLane: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
                 subscriptionId: 7679411351600780301149911877661372214661410357691824210932701096407150720747,
                 callbackGasLimit: 500000,
-                link: 0x514910771AF9Ca656af840dff83E8264EcF986CA
+                link: 0x514910771AF9Ca656af840dff83E8264EcF986CA,
+                account: FOUNDRY_DEFAULT_SENDER
             });
     }
 
@@ -93,7 +99,8 @@ contract HelperConfig is Script, Constants {
             gasLane: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
             subscriptionId: 0,
             callbackGasLimit: 500000,
-            link: address(linkToken)
+            link: address(linkToken),
+            account: FOUNDRY_DEFAULT_SENDER
         });
 
         return localNetworkConfig;

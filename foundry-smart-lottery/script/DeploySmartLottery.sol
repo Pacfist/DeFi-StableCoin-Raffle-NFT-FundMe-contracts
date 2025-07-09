@@ -3,9 +3,9 @@ pragma solidity ^0.8.8;
 import {Script} from "forge-std/Script.sol";
 import {Raffle} from "../src/Raffle.sol";
 import {HelperConfig} from "./HelperConfig.sol";
-import {CreateSubscription} from "./Interactions.sol";
+import {CreateSubscription, FundSub, AddConsumer} from "./Interactions.sol";
 
-contract DeploySL is Script, CreateSubscription {
+contract DeploySL is Script {
     function run() public {
         deployContract();
     }
@@ -15,7 +15,10 @@ contract DeploySL is Script, CreateSubscription {
         HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
 
         if (config.subscriptionId == 0) {
-            (config.subscriptionId, ) = CreateSubscription.createSub();
+            CreateSubscription createSub = new CreateSubscription();
+            (config.subscriptionId, ) = createSub.createSub();
+            FundSub fundSub = new FundSub();
+            fundSub.fundSub();
         }
 
         vm.startBroadcast();
@@ -28,6 +31,9 @@ contract DeploySL is Script, CreateSubscription {
             config.callbackGasLimit
         );
         vm.stopBroadcast();
+
+        AddConsumer addCon = new AddConsumer();
+        addCon.addCon();
 
         return (raffle, helperConfig);
     }
