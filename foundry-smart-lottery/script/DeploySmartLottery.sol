@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.8;
-import {Script} from "forge-std/Script.sol";
+import {Script, console} from "forge-std/Script.sol";
 import {Raffle} from "../src/Raffle.sol";
 import {HelperConfig} from "./HelperConfig.sol";
 import {CreateSubscription, FundSub, AddConsumer} from "./Interactions.sol";
-
+import {console2} from "forge-std/console2.sol";
 contract DeploySL is Script {
     function run() public {
         deployContract();
@@ -16,9 +16,15 @@ contract DeploySL is Script {
 
         if (config.subscriptionId == 0) {
             CreateSubscription createSub = new CreateSubscription();
-            (config.subscriptionId, ) = createSub.createSub();
+            (config.subscriptionId, config.vrfCoordinator) = createSub
+                .createSubscription(config.vrfCoordinator);
+            console2.log("New subId is ", config.subscriptionId);
             FundSub fundSub = new FundSub();
-            fundSub.fundSub();
+            fundSub.fundSub(
+                config.vrfCoordinator,
+                config.subscriptionId,
+                config.link
+            );
         }
 
         vm.startBroadcast();
@@ -33,7 +39,11 @@ contract DeploySL is Script {
         vm.stopBroadcast();
 
         AddConsumer addCon = new AddConsumer();
-        addCon.addCon();
+        addCon.addConsumer(
+            address(raffle),
+            config.vrfCoordinator,
+            config.subscriptionId
+        );
 
         return (raffle, helperConfig);
     }

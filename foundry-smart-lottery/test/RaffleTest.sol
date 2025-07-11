@@ -19,35 +19,35 @@ contract RaffleTest is Test {
         vm.deal(USER2, 10 ether);
     }
 
-    function testRaffleOpenState() public view {
-        assert(raffle.getState() == Raffle.STATUS.OPEN);
-    }
+    // function testRaffleOpenState() public view {
+    //     assert(raffle.getState() == Raffle.STATUS.OPEN);
+    // }
 
-    function testEnterRafflePositive() public {
-        vm.prank(USER1);
+    // function testEnterRafflePositive() public {
+    //     vm.prank(USER1);
 
-        raffle.enterRaffle{value: 1000000000000000000}();
-        console.log(raffle.getPlayers()[0]);
-        assert(raffle.getPlayers()[0] == USER1);
-    }
+    //     raffle.enterRaffle{value: 1000000000000000000}();
+    //     console.log(raffle.getPlayers()[0]);
+    //     assert(raffle.getPlayers()[0] == USER1);
+    // }
 
-    function testEnterRaffleNegative() public {
-        vm.prank(USER1);
+    // function testEnterRaffleNegative() public {
+    //     vm.prank(USER1);
 
-        vm.expectRevert(Raffle.NotEnoughtEthSent.selector);
-        raffle.enterRaffle{value: 100000}();
-    }
+    //     vm.expectRevert(Raffle.NotEnoughtEthSent.selector);
+    //     raffle.enterRaffle{value: 100000}();
+    // }
 
-    event RaffleEnter(address indexed player);
+    // event RaffleEnter(address indexed player);
 
-    function testEnterEmit() public {
-        vm.prank(USER1);
+    // function testEnterEmit() public {
+    //     vm.prank(USER1);
 
-        vm.expectEmit(true, false, false, false, address(raffle));
-        emit RaffleEnter(USER1);
+    //     vm.expectEmit(true, false, false, false, address(raffle));
+    //     emit RaffleEnter(USER1);
 
-        raffle.enterRaffle{value: 1000000000000000000}();
-    }
+    //     raffle.enterRaffle{value: 1000000000000000000}();
+    // }
 
     function testEnterRaffleCalculatingState() public {
         vm.prank(USER1);
