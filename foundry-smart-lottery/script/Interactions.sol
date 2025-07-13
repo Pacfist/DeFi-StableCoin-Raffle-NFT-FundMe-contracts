@@ -62,8 +62,6 @@ contract FundSub is Script {
         uint256 subId,
         address linkToken
     ) public {
-        HelperConfig helperConfig = new HelperConfig();
-
         console2.log("SubId for funding!!!!!!!!!!!!!!!!!!!!!!!!!", subId);
         if (block.chainid == 31337) {
             vm.startBroadcast();

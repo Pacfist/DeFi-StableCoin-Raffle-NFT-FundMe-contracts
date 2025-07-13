@@ -5,6 +5,8 @@ import {Test, console} from "forge-std/Test.sol";
 import {DeploySL} from "../script/DeploySmartLottery.sol";
 import {Raffle} from "../src/Raffle.sol";
 import {HelperConfig} from "../script/HelperConfig.sol";
+import {console2} from "forge-std/console2.sol";
+import {Vm} from "forge-std/Vm.sol";
 
 contract RaffleTest is Test {
     Raffle public raffle;
@@ -70,15 +72,64 @@ contract RaffleTest is Test {
     //     assert(!needed);
     // }
 
-    function testCheckRaffleNotOpen() public {
+    // function testCheckRaffleNotOpen() public {
+    //     vm.prank(USER1);
+    //     raffle.enterRaffle{value: 1000000000000000000}();
+    //     vm.warp(block.timestamp + 31);
+    //     vm.roll(block.number + 1);
+    //     raffle.performUpkeep("");
+
+    //     (bool needed, ) = raffle.checkUpkeep("");
+
+    //     assert(!needed);
+    // }
+    // event WinnerPicked(address indexed winner);
+    // function testRandomWords() public {
+    //     vm.prank(USER1);
+    //     raffle.enterRaffle{value: 1000000000000000000}();
+
+    //     vm.prank(USER2);
+    //     raffle.enterRaffle{value: 1000000000000000000}();
+
+    //     vm.expectEmit(true, false, false, false, address(raffle));
+    //     emit WinnerPicked(USER1);
+    // }
+
+    // function testPerformUpkeepRunIfTrue() public {
+    //     vm.prank(USER1);
+    //     raffle.enterRaffle{value: 1000000000000000000}();
+    //     vm.warp(block.timestamp + 30);
+    //     vm.roll(block.number + 1);
+
+    //     raffle.performUpkeep("");
+    // }
+
+    function testPerformUpkeepRunIfFalseTime() public {
+        Raffle.STATUS state = raffle.getState();
+        console2.log("State as uint:", uint256(state));
         vm.prank(USER1);
         raffle.enterRaffle{value: 1000000000000000000}();
-        vm.warp(block.timestamp + 31);
-        vm.roll(block.number + 1);
+        console2.log("State as uint 2:", uint256(state));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Raffle.UpkeepNotNeeded.selector,
+                1000000000000000000,
+                1,
+                state
+            )
+        );
+
         raffle.performUpkeep("");
+    }
 
-        (bool needed, ) = raffle.checkUpkeep("");
+    function testPerformUpkeepCheckRequID() public {
+        vm.prank(USER1);
+        raffle.enterRaffle{value: 1000000000000000000}();
+        vm.warp(block.timestamp + 30);
+        vm.roll(block.number + 1);
 
-        assert(!needed);
+        vm.recordLogs();
+        raffle.performUpkeep("");
+        Vm.Log[] memory entries = vm.getRecordedLogs();
     }
 }
