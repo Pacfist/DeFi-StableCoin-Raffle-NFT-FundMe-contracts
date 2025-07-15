@@ -62,13 +62,17 @@ contract FundSub is Script {
         uint256 subId,
         address linkToken
     ) public {
-        console2.log("SubId for funding!!!!!!!!!!!!!!!!!!!!!!!!!", subId);
+        console2.log("Funding subscription: ", subId);
+        console2.log("Using vrfCoordinator: ", vrfCoordinator);
+        console2.log("On ChainID: ", block.chainid);
         if (block.chainid == 31337) {
             vm.startBroadcast();
+            LinkToken(linkToken).transfer(vrfCoordinator, 3000 ether);
             VRFCoordinatorV2_5Mock(vrfCoordinator).fundSubscription(
                 subId,
-                3 ether
+                3000 ether
             );
+
             vm.stopBroadcast();
         } else {
             console.log("Funding on chain:");

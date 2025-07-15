@@ -33,6 +33,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
     mapping(address => uint256) public senderToAmount;
     address payable[] private players;
+    address payable recentWinner;
 
     event RaffleEnter(address indexed player);
     event WinnerPicked(address indexed winner);
@@ -117,7 +118,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
         uint256[] calldata randomWords
     ) internal override {
         uint256 indexOfWinner = randomWords[0] % players.length;
-        address payable recentWinner = players[indexOfWinner];
+        recentWinner = players[indexOfWinner];
 
         players = new address payable[](0);
         s_lotteryState = STATUS.OPEN;
@@ -139,5 +140,13 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
     function getPlayers() external view returns (address payable[] memory) {
         return players;
+    }
+
+    function getLastTimeStamp() public view returns (uint256) {
+        return lastTimeStamp;
+    }
+
+    function getRecentWinner() public view returns (address) {
+        return recentWinner;
     }
 }
