@@ -104,7 +104,7 @@ contract AddConsumer is Script {
         uint256 subId,
         address account
     ) public {
-        console.log("Adding consumer contract: ", contractToAddToVrf);
+        console.log("Adding consumer contract : ", contractToAddToVrf);
         console.log("Using vrfCoordinator: ", vrfCoordinator);
         console.log("On ChainID: ", block.chainid);
         vm.startBroadcast(account);
