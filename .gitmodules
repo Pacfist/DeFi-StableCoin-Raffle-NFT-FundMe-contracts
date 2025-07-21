@@ -28,3 +28,12 @@
 [submodule "foundry-smart-lottery/lib/foundry-devops"]
 	path = foundry-smart-lottery/lib/foundry-devops
 	url = https://github.com/Cyfrin/foundry-devops
+[submodule "foundry-newToken/lib/forge-std"]
+	path = foundry-newToken/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "foundry-newToken/lib/openzeppelin-foundry-upgrades"]
+	path = foundry-newToken/lib/openzeppelin-foundry-upgrades
+	url = https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades
+[submodule "foundry-newToken/lib/openzeppelin-contracts"]
+	path = foundry-newToken/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
