@@ -3,6 +3,7 @@ pragma solidity ^0.8.8;
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {console2} from "forge-std/console2.sol";
 contract MoodNFT is ERC721, Ownable {
     enum Mood {
         HAPPY,
@@ -37,8 +38,10 @@ contract MoodNFT is ERC721, Ownable {
 
     function flipMood(uint256 tokenId) public onlyOwner {
         if (s_tokenIdToMood[tokenId] == Mood.HAPPY) {
+            console2.log("Flip to SAD");
             s_tokenIdToMood[tokenId] = Mood.SAD;
         } else {
+            console2.log("Flip to HAPPY");
             s_tokenIdToMood[tokenId] = Mood.HAPPY;
         }
     }

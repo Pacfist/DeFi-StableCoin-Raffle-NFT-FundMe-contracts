@@ -11,7 +11,6 @@ contract DeployMoodNft is Script {
         string memory sadSvg = vm.readFile("./img/sad.svg");
         string memory happySvg = vm.readFile("./img/happy.svg");
 
-        console2.log(sadSvg);
         address owner = 0x89Fe3AA7844D3954846003AB3284f3D3320f0a1E;
         vm.startBroadcast();
         MoodNFT moodNft = new MoodNFT(
@@ -19,7 +18,6 @@ contract DeployMoodNft is Script {
             svgToImgURI(happySvg),
             owner
         );
-        console2.log(svgToImgURI(sadSvg));
         vm.stopBroadcast();
         return moodNft;
     }
