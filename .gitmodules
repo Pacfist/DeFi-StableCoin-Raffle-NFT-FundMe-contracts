@@ -52,3 +52,6 @@
 [submodule "foundry-defi-stablecoin/lib/openzeppelin-contracts"]
 	path = foundry-defi-stablecoin/lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "foundry-defi-stablecoin/lib/chainlink-local"]
+	path = foundry-defi-stablecoin/lib/chainlink-local
+	url = https://github.com/smartcontractkit/chainlink-local

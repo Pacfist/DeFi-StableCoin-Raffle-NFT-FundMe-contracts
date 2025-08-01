@@ -36,4 +36,18 @@ contract BasicNFTtest is Test {
         stableCoin.mint(owner, 5);
         assertEq(stableCoin.balanceOf(owner), 5);
     }
+
+    function testMintRevertAmountLess() public {
+        vm.prank(owner);
+        vm.expectRevert();
+        stableCoin.mint(owner, 0);
+    }
+
+    function testBurn() public {
+        vm.prank(owner);
+        stableCoin.mint(owner, 10);
+        vm.prank(owner);
+        stableCoin.burn(5);
+        assertEq(stableCoin.balanceOf(owner), 5);
+    }
 }
