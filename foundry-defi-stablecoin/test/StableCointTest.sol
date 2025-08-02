@@ -3,20 +3,24 @@ pragma solidity ^0.8.8;
 
 import {Test} from "forge-std/Test.sol";
 import {StableCoin} from "../src/StableCoin.sol";
-import {DeployStableCoin} from "../script/DeployStableCoin.sol";
 import {console2} from "forge-std/console2.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {DeployEngine} from "../script/DeployEngine.sol";
+import {DSCEngine} from "../src/DSCEngine.sol";
 
 contract BasicNFTtest is Test {
     error OwnableUnauthorizedAccount(address);
     StableCoin public stableCoin;
     Ownable public ownable;
+    DSCEngine public engine;
     address public USER = makeAddr("user");
     address public owner = 0x89Fe3AA7844D3954846003AB3284f3D3320f0a1E;
+
     function setUp() public {
         vm.deal(USER, 10 ether);
-        DeployStableCoin deploySC = new DeployStableCoin();
-        stableCoin = deploySC.run();
+        DeployEngine dp = new DeployEngine();
+
+        (engine, stableCoin, ) = dp.run();
     }
 
     function testName() public view {

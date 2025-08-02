@@ -6,6 +6,7 @@ import {StableCoin} from "./StableCoin.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/data-feeds/interfaces/AggregatorV3Interface.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {console2} from "forge-std/console2.sol";
 
 contract DSCEngine is ReentrancyGuard {
     event CollateralDeposited(
@@ -19,6 +20,7 @@ contract DSCEngine is ReentrancyGuard {
     error DSCEngine__DifferntQuantityPriceFeedAndTokens();
     error DSCEngine__TransferFailed();
     error DSCEngine_HealthFactorLessThenOne(uint256 healthFactor);
+    error DSCEngine__MintFailed();
 
     uint256 private constant LIQUIDATION_THRESHOLD = 50;
 
@@ -58,6 +60,20 @@ contract DSCEngine is ReentrancyGuard {
             s_tokenAddrsToPriceFeed[tokenAddress[i]] = priceFeedAddress[i];
             s_collateralTokensAddresses.push(tokenAddress[i]);
         }
+
+        console2.log(
+            "ADDERES FOR TOKEN IN DCS ENGINE!!!",
+            tokenAddress[0],
+            "-----",
+            tokenAddress[1]
+        );
+
+        console2.log(
+            "ADDERES FOR PRICE FEED IN DCS ENGINE!!!",
+            priceFeedAddress[0],
+            "-----",
+            priceFeedAddress[1]
+        );
         i_dsc = StableCoin(dscAddress);
     }
 
@@ -93,6 +109,10 @@ contract DSCEngine is ReentrancyGuard {
     ) external moreThenZero(_amountDsc) nonReentrant {
         s_dcsMinted[msg.sender] += _amountDsc;
         _revertIfHealthFactorIsBroken(msg.sender);
+        bool minted = i_dsc.mint(msg.sender, _amountDsc);
+        if (!minted) {
+            revert DSCEngine__MintFailed();
+        }
     }
 
     function burnDsc() external {}
@@ -141,10 +161,15 @@ contract DSCEngine is ReentrancyGuard {
         address _token,
         uint256 _amount
     ) public view returns (uint256) {
+        console2.log("------IN FUNCTION GTE VALUE USD --------");
+        console2.log(_token);
+        console2.log(s_tokenAddrsToPriceFeed[_token]);
+        console2.log("------OUT FUNCTION GTE VALUE USD --------");
         AggregatorV3Interface priceFeed = AggregatorV3Interface(
             s_tokenAddrsToPriceFeed[_token]
         );
         (, int256 price, , , ) = priceFeed.latestRoundData();
+
         return ((uint256(price) * 1e10) * _amount) / 1e18;
     }
 }

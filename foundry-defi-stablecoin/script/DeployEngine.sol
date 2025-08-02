@@ -4,8 +4,11 @@ pragma solidity ^0.8.8;
 
 import {DSCEngine} from "../src/DSCEngine.sol";
 import {Script} from "forge-std/Script.sol";
-import {DeployStableCoin} from "./DeployStableCoin.sol";
 import {StableCoin} from "../src/StableCoin.sol";
+import {MockV3Aggregator} from "../test/MockV3Aggregator.sol";
+import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
+import {console2} from "forge-std/console2.sol";
+import {HelperConfig} from "./HelperConfig.sol";
 
 contract DeployEngine is Script {
     DSCEngine public dscEngine;
@@ -13,19 +16,38 @@ contract DeployEngine is Script {
 
     address[] public tokenAddresses;
     address[] public priceFeedAddresses;
-    function run() public returns (DSCEngine, StableCoin) {
-        tokenAddresses = [0xdd13E55209Fd76AfE204dBda4007C227904f0a81];
-        priceFeedAddresses = [0x694AA1769357215DE4FAC081bf1f309aDC325306];
-        DeployStableCoin deploySC = new DeployStableCoin();
-        stableCoin = deploySC.run();
-        vm.startBroadcast();
+    address public publicOwnerKey;
+    function run() public returns (DSCEngine, StableCoin, HelperConfig) {
+        HelperConfig helperConfig = new HelperConfig();
+
+        (
+            address wethUsdPriceFeed,
+            address wbtcUsdPriceFeed,
+            address weth,
+            address wbtc,
+            uint256 deployerKey
+        ) = helperConfig.activeNetworkConfig();
+
+        tokenAddresses = [weth, wbtc];
+        priceFeedAddresses = [wethUsdPriceFeed, wbtcUsdPriceFeed];
+
+        if (block.chainid == 11155111) {
+            publicOwnerKey = 0x89Fe3AA7844D3954846003AB3284f3D3320f0a1E;
+        } else {
+            publicOwnerKey = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+        }
+
+        vm.startBroadcast(deployerKey);
+        stableCoin = new StableCoin(publicOwnerKey);
         dscEngine = new DSCEngine(
             tokenAddresses,
             priceFeedAddresses,
             address(stableCoin)
         );
+        stableCoin.transferOwnership(address(dscEngine));
+        console2.log("The owner of the coin now is: ", address(dscEngine));
         vm.stopBroadcast();
 
-        return (dscEngine, stableCoin);
+        return (dscEngine, stableCoin, helperConfig);
     }
 }
