@@ -14,13 +14,14 @@ contract BasicNFTtest is Test {
     Ownable public ownable;
     DSCEngine public engine;
     address public USER = makeAddr("user");
-    address public owner = 0x89Fe3AA7844D3954846003AB3284f3D3320f0a1E;
+    address public owner;
 
     function setUp() public {
         vm.deal(USER, 10 ether);
         DeployEngine dp = new DeployEngine();
 
         (engine, stableCoin, ) = dp.run();
+        owner = address(engine);
     }
 
     function testName() public view {
