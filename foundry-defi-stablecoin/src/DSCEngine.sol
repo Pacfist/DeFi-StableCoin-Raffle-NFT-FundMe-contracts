@@ -6,6 +6,7 @@ import {StableCoin} from "./StableCoin.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/data-feeds/interfaces/AggregatorV3Interface.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {console2} from "forge-std/console2.sol";
 
 contract DSCEngine is ReentrancyGuard {
     event CollateralDeposited(
@@ -78,6 +79,7 @@ contract DSCEngine is ReentrancyGuard {
     ) external {
         depositCollateral(_tokenCollateralAddr, _amountCollateral);
         mintDsc(_amountDsc);
+        _revertIfHealthFactorIsBroken(msg.sender);
     }
 
     function depositCollateral(
@@ -168,7 +170,7 @@ contract DSCEngine is ReentrancyGuard {
 
     function _revertIfHealthFactorIsBroken(address _user) internal view {
         uint256 userHealthFactor = _healthFactor(_user);
-        if (userHealthFactor < 1) {
+        if (userHealthFactor < 1e18) {
             revert DSCEngine_HealthFactorLessThenOne(userHealthFactor);
         }
     }
@@ -179,10 +181,20 @@ contract DSCEngine is ReentrancyGuard {
             uint256 collateralValueInUsd
         ) = _getAccountInformation(_user);
 
-        uint256 collateralAdjustedForThreshold = (collateralValueInUsd *
-            LIQUIDATION_THRESHOLD) / 100;
+        if (totalDsc == 0) {
+            return type(uint256).max; // no debt -> maximally safe
+        }
 
-        return (collateralAdjustedForThreshold * 1e18) / totalDsc;
+        uint256 adjCollateral = (collateralValueInUsd * 50) / 100;
+
+        uint256 hf = (adjCollateral * 1e18) / (totalDsc * 1e18);
+
+        console2.log("Total DSC :", totalDsc);
+        console2.log("Collateral USD (1e18):", collateralValueInUsd);
+        console2.log("Adj Collateral (1e18):", adjCollateral);
+        console2.log("Max DSC to mint (1e18):", adjCollateral); // equal to adjCollateral at HF = 1
+        console2.log("Health Factor is: ", hf);
+        return hf;
     }
 
     function _getAccountInformation(
@@ -198,7 +210,13 @@ contract DSCEngine is ReentrancyGuard {
         address _from,
         address _to
     ) private moreThenZero(_amount) {
+        console2.log("Started _redeemCollateral");
+        console2.log(
+            "Token user in contract: ",
+            s_collateralDeposited[_from][_tokenCollateral]
+        );
         s_collateralDeposited[_from][_tokenCollateral] -= _amount;
+        console2.log("After minus: ");
         emit CollateralRedeemed(_from, _to, _tokenCollateral, _amount);
         bool success = IERC20(_tokenCollateral).transfer(_to, _amount);
         if (!success) {
@@ -257,5 +275,12 @@ contract DSCEngine is ReentrancyGuard {
         address _user
     ) public view returns (uint256 totalDsc, uint256 collateralValue) {
         return _getAccountInformation(_user);
+    }
+
+    function getTokenAmount(
+        address _user,
+        address _token
+    ) public view returns (uint256) {
+        return s_collateralDeposited[_user][_token];
     }
 }

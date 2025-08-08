@@ -31,6 +31,23 @@ contract EngineTest is Test {
         wethToken = ERC20Mock(weth);
     }
 
+    modifier depositingCollateralAndMintDsc(
+        uint256 AMOUNT_COLLATERALL,
+        uint256 AMOUNT_DSC
+    ) {
+        vm.startPrank(USER);
+        wethToken.mint(USER, 100e18);
+        wethToken.approve(address(dscEngine), AMOUNT_COLLATERALL);
+
+        dscEngine.depositCollateralAndMintDsc(
+            weth,
+            AMOUNT_COLLATERALL,
+            AMOUNT_DSC
+        );
+        vm.stopPrank();
+        _;
+    }
+
     // function testName() public view {
     //     console2.log(stableCoin.name());
     // }
@@ -39,41 +56,76 @@ contract EngineTest is Test {
     //     console2.log(stableCoin.owner());
     // }
 
-    function testGetUsdValue() public {
-        console2.log("token address 0!!! --- ", weth);
-        assertEq(dscEngine.getUsdValue(weth, 2), ETH_PRICE * 2);
-    }
+    // function testGetUsdValue() public {
+    //     console2.log("token address 0!!! --- ", weth);
+    //     assertEq(dscEngine.getUsdValue(weth, 2), ETH_PRICE * 2);
+    // }
 
-    function testDepositCollateral() public {
-        wethToken.mint(USER, 100e18);
-        console2.log(wethToken.balanceOf(USER));
-        vm.prank(USER);
-        dscEngine.depositCollateralAndMintDsc(weth, 1, 500);
-        console2.log(dscEngine.getHealthFactor(USER));
-    }
+    // function testTokenAmount() public {
+    //     uint256 usdAmount = 1.5 ether;
+    //     uint256 expectedWeth = 0.00075 ether;
+    //     uint256 actualWeth = dscEngine.getTokenAmountFromUsd(weth, usdAmount);
+    //     assertEq(expectedWeth, actualWeth);
+    // }
 
-    function testTokenAmount() public {
-        uint256 usdAmount = 1.5 ether;
-        uint256 expectedWeth = 0.00075 ether;
-        uint256 actualWeth = dscEngine.getTokenAmountFromUsd(weth, usdAmount);
-        assertEq(expectedWeth, actualWeth);
-    }
+    // modifier depositingCollateral(uint256 AMOUNT_COLLATERALL) {
+    //     vm.startPrank(USER);
+    //     wethToken.mint(USER, 100e18);
+    //     wethToken.approve(address(dscEngine), AMOUNT_COLLATERALL);
+    //     dscEngine.depositCollateral(weth, AMOUNT_COLLATERALL);
+    //     console2.log("Balance After depositing: ", wethToken.balanceOf(USER));
+    //     vm.stopPrank();
+    //     _;
+    // }
 
-    modifier depositingCollateral(uint256 AMOUNT_COLLATERALL) {
-        vm.startPrank(USER);
-        wethToken.mint(USER, 100e18);
-        wethToken.approve(address(dscEngine), AMOUNT_COLLATERALL);
-        dscEngine.depositCollateral(weth, AMOUNT_COLLATERALL);
-        vm.stopPrank();
-        _;
-    }
+    // function testDepositCollateralGetAccountInfo()
+    //     public
+    //     depositingCollateral(1e18)
+    // {
+    //     (uint256 totalDscMinted, uint256 collateralValueInUsd) = dscEngine
+    //         .getAccountInformation(USER);
+    //     console2.log(totalDscMinted, dscEngine.getUsdValue(weth, 1e18));
+    //     assertEq(collateralValueInUsd, dscEngine.getUsdValue(weth, 1e18));
+    // }
 
-    function testDepositCollateralGetAccountInfo()
+    // function testDepositCollaterallAndMintDsc()
+    //     public
+    //     depositingCollateralAndMintDsc(2e18, 2000)
+    // {
+    //     (uint256 totalDscMinted, uint256 collateralValueInUsd) = dscEngine
+    //         .getAccountInformation(USER);
+    //     console2.log(totalDscMinted, dscEngine.getUsdValue(weth, 2e18));
+    //     console2.log(dscEngine.getHealthFactor(USER));
+    //     assertEq(collateralValueInUsd, dscEngine.getUsdValue(weth, 2e18));
+    //     assertEq(totalDscMinted, 2000);
+    // }
+
+    function testRedeemCollateral()
         public
-        depositingCollateral(1e18)
+        depositingCollateralAndMintDsc(2e18, 1000)
     {
         (uint256 totalDscMinted, uint256 collateralValueInUsd) = dscEngine
             .getAccountInformation(USER);
-        console2.log(totalDscMinted, collateralValueInUsd);
+        console2.log(collateralValueInUsd);
+        vm.prank(USER);
+        dscEngine.redeemCollateral(weth, 1e18);
+        console2.log(wethToken.balanceOf(USER));
+        console2.log(dscEngine.getTokenAmount(USER, weth));
+        assertEq(wethToken.balanceOf(USER), 100e18 - 1e18);
+    }
+
+    function testRedeemCollateralExpectRevertHealthFactor()
+        public
+        depositingCollateralAndMintDsc(2e18, 1500)
+    {
+        (uint256 totalDscMinted, uint256 collateralValueInUsd) = dscEngine
+            .getAccountInformation(USER);
+        console2.log(collateralValueInUsd);
+        vm.prank(USER);
+        vm.expectRevert();
+        dscEngine.redeemCollateral(weth, 1e18);
+        console2.log(wethToken.balanceOf(USER));
+        console2.log(dscEngine.getTokenAmount(USER, weth));
+        assertEq(wethToken.balanceOf(USER), 100e18 - 2e18);
     }
 }
