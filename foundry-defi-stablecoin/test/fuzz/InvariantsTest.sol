@@ -56,6 +56,12 @@ contract InvariantsTests is StdInvariant, Test {
         uint256 wethValue = dscEngine.getUsdValue(weth, totalWethDeposited);
         uint256 wbtcValue = dscEngine.getUsdValue(wbtc, totalWbtcDeposited);
 
+        console2.log("In varian test wethValue: ", wethValue);
+        console2.log("In varian test wbtcValue: ", wbtcValue);
+
+        console2.log("In varian test totalSupply: ", totalSupply);
+        console2.log("timesMintIsCalled is: ", handler.timesMintIsCalled());
+
         assert(wethValue + wbtcValue >= totalSupply);
     }
 }

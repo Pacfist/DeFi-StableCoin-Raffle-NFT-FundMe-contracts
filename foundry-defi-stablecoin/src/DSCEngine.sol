@@ -215,6 +215,11 @@ contract DSCEngine is ReentrancyGuard {
         address _from,
         address _to
     ) private moreThenZero(_amount) {
+        console2.log(
+            "IN THE ENGINE USER AMOUNT: ",
+            s_collateralDeposited[_from][_tokenCollateral]
+        );
+        console2.log("IN THE ENGINE AMOUNT TO REDEEM: ", _amount);
         s_collateralDeposited[_from][_tokenCollateral] -= _amount;
 
         emit CollateralRedeemed(_from, _to, _tokenCollateral, _amount);
