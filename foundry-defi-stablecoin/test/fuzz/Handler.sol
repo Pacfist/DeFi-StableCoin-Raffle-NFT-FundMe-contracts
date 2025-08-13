@@ -22,6 +22,10 @@ contract Handler is Test {
     uint256 MAX_DEPOSIT_SIZE = type(uint96).max;
 
     uint256 public timesMintIsCalled = 0;
+    uint256 public timesCollateralIsCalled = 0;
+    address[] public usersWithCollateralDeposited;
+
+    MockV3Aggregator public ethUsdPriceFeed;
 
     constructor(DSCEngine _dscEngine, StableCoin _stableCoin) {
         dscEngine = _dscEngine;
@@ -30,93 +34,145 @@ contract Handler is Test {
         address[] memory collateralTokens = dscEngine.getCollateralTokens();
         wethToken = ERC20Mock(collateralTokens[0]);
         wbtcToken = ERC20Mock(collateralTokens[1]);
+
+        ethUsdPriceFeed = MockV3Aggregator(
+            dscEngine.getCollateralTokenPriceFeed(address(wethToken))
+        );
     }
 
-    function depositCollateralAndMintDsc(
-        uint256 collateralSeed,
-        uint256 _amountCollateral,
-        uint256 _amountDsc
-    ) public {
+    // function depositCollateralAndMintDsc(
+    //     uint256 collateralSeed,
+    //     uint256 _amountCollateral,
+    //     uint256 _amountDsc
+    // ) public {
+    //     ERC20Mock collateral = _getCollateralFromSeed(collateralSeed);
+
+    //     (uint256 totalDscMinted, uint256 collateralValueInUsd) = dscEngine
+    //         .getAccountInformation(msg.sender);
+    //     console2.log("collateralValueInUsd: ", collateralValueInUsd);
+
+    //     int256 maxDscToMint = (int256(collateralValueInUsd) / 2) -
+    //         int256(totalDscMinted);
+
+    //     if (maxDscToMint == 0) {
+    //         collateralValueInUsd = dscEngine.getUsdValue(
+    //             address(collateral),
+    //             _amountCollateral
+    //         );
+
+    //         maxDscToMint =
+    //             (int256(collateralValueInUsd) / 2) -
+    //             int256(totalDscMinted);
+    //     }
+
+    //     console2.log("maxDscToMint: ", maxDscToMint);
+
+    //     if (maxDscToMint < 0) {
+    //         return;
+    //     }
+    //     _amountDsc = bound(_amountDsc, 0, uint256(maxDscToMint));
+    //     console2.log("_amountDsc: ", _amountDsc);
+
+    //     if (_amountDsc == 0) {
+    //         return;
+    //     }
+
+    //     _amountCollateral = bound(_amountCollateral, 1, MAX_DEPOSIT_SIZE);
+
+    //     vm.startPrank(msg.sender);
+    //     collateral.mint(msg.sender, _amountCollateral);
+    //     collateral.approve(address(dscEngine), _amountCollateral);
+
+    //     dscEngine.depositCollateralAndMintDsc(
+    //         address(collateral),
+    //         _amountCollateral,
+    //         _amountDsc
+    //     );
+    //     vm.stopPrank();
+
+    //     (
+    //         uint256 totalDscMintedAfetrDep,
+    //         uint256 collateralValueInUsdAfterDep
+    //     ) = dscEngine.getAccountInformation(msg.sender);
+
+    //     console2.log(
+    //         "Afetr dep dsc and colla value and collateral address: ",
+    //         totalDscMintedAfetrDep,
+    //         collateralValueInUsdAfterDep,
+    //         address(collateral)
+    //     );
+
+    //
+    // }
+
+    function mintDsc(uint256 _amount, uint256 _addressSeed) public {
+        if (usersWithCollateralDeposited.length == 0) {
+            return;
+        }
+        address sender = usersWithCollateralDeposited[
+            _addressSeed % usersWithCollateralDeposited.length
+        ];
         (uint256 totalDscMinted, uint256 collateralValueInUsd) = dscEngine
-            .getAccountInformation(msg.sender);
+            .getAccountInformation(sender);
         int256 maxDscToMint = (int256(collateralValueInUsd) / 2) -
             int256(totalDscMinted);
+
+        console2.log("totalDscMinted: ", totalDscMinted);
         if (maxDscToMint < 0) {
             return;
         }
-        _amountDsc = bound(_amountDsc, 0, uint256(maxDscToMint));
-
-        if (_amountDsc == 0) {
+        _amount = bound(_amount, 0, uint256(maxDscToMint));
+        if (_amount == 0) {
             return;
         }
+        vm.startPrank(sender);
+        dscEngine.mintDsc(_amount);
+        vm.stopPrank();
 
+        timesMintIsCalled++;
+    }
+
+    function depositCollateral(
+        uint256 collateralSeed,
+        uint256 _amountCollateral
+    ) public {
         _amountCollateral = bound(_amountCollateral, 1, MAX_DEPOSIT_SIZE);
         ERC20Mock collateral = _getCollateralFromSeed(collateralSeed);
         vm.startPrank(msg.sender);
         collateral.mint(msg.sender, _amountCollateral);
         collateral.approve(address(dscEngine), _amountCollateral);
 
-        dscEngine.depositCollateralAndMintDsc(
-            address(collateral),
-            _amountCollateral,
-            _amountDsc
-        );
+        dscEngine.depositCollateral(address(collateral), _amountCollateral);
         vm.stopPrank();
-
-        timesMintIsCalled++;
+        usersWithCollateralDeposited.push(msg.sender);
+        timesCollateralIsCalled++;
     }
 
-    // function mintDsc(uint256 _amount) public {
-    //     (uint256 totalDscMinted, uint256 collateralValueInUsd) = dscEngine
-    //         .getAccountInformation(msg.sender);
-    //     int256 maxDscToMint = (int256(collateralValueInUsd) / 2) -
-    //         int256(totalDscMinted);
-    //     if (maxDscToMint < 0) {
-    //         return;
-    //     }
-    //     _amount = bound(_amount, 0, uint256(maxDscToMint));
-    //     if (_amount == 0) {
-    //         return;
-    //     }
-    //     vm.startPrank(msg.sender);
-    //     dscEngine.mintDsc(_amount);
-    //     vm.stopPrank();
-    // }
+    function redeemCollateral(
+        uint256 collateralSeed,
+        uint256 _amountCollateral
+    ) public {
+        ERC20Mock collateral = _getCollateralFromSeed(collateralSeed);
 
-    // function depositCollateral(
-    //     uint256 collateralSeed,
-    //     uint256 _amountCollateral
-    // ) public {
-    //     _amountCollateral = bound(_amountCollateral, 1, MAX_DEPOSIT_SIZE);
-    //     ERC20Mock collateral = _getCollateralFromSeed(collateralSeed);
-    //     vm.startPrank(msg.sender);
-    //     collateral.mint(msg.sender, _amountCollateral);
-    //     collateral.approve(address(dscEngine), _amountCollateral);
+        uint256 maxCollaterallToRedeem = dscEngine.getTokenAmount(
+            msg.sender,
+            address(collateral)
+        );
 
-    //     dscEngine.depositCollateral(address(collateral), _amountCollateral);
-    //     vm.stopPrank();
-    // }
+        _amountCollateral = bound(_amountCollateral, 0, maxCollaterallToRedeem);
+        if (_amountCollateral == 0) {
+            return;
+        }
+        console2.log("Amount collTERAL: ", _amountCollateral);
+        console2.log("Max collaterall to redeem: ", maxCollaterallToRedeem);
+        vm.prank(msg.sender);
+        dscEngine.redeemCollateral(address(collateral), _amountCollateral);
+    }
 
-    // function redeemCollateral(
-    //     uint256 collateralSeed,
-    //     uint256 _amountCollateral
-    // ) public {
-    //     ERC20Mock collateral = _getCollateralFromSeed(collateralSeed);
-
-    //     uint256 maxCollaterallToRedeem = dscEngine.getTokenAmount(
-    //         msg.sender,
-    //         address(collateral)
-    //     );
-
-    //     _amountCollateral = bound(_amountCollateral, 0, maxCollaterallToRedeem);
-    //     if (_amountCollateral == 0) {
-    //         return;
-    //     }
-    //     console2.log("Amount collTERAL: ", _amountCollateral);
-    //     console2.log("Max collaterall to redeem: ", maxCollaterallToRedeem);
-    //     vm.prank(msg.sender);
-    //     dscEngine.redeemCollateral(address(collateral), _amountCollateral);
-    // }
+    function updateCollateralPrice(uint96 newPrice) public {
+        int256 newPriceInt = int256(uint256(newPrice));
+        ethUsdPriceFeed.updateAnswer(newPriceInt);
+    }
 
     //HELPER FUNCTIONS
 

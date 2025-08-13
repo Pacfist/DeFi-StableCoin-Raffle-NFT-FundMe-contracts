@@ -50,17 +50,31 @@ contract InvariantsTests is StdInvariant, Test {
     function invariant_protocolMustHaveMoreValueThanTotalSupply() public view {
         uint256 totalSupply = stableCoin.totalSupply();
 
-        uint256 totalWethDeposited = wethToken.balanceOf(address(stableCoin));
-        uint256 totalWbtcDeposited = wbtcToken.balanceOf(address(stableCoin));
+        uint256 totalWethDeposited = wethToken.balanceOf(address(dscEngine));
+        uint256 totalWbtcDeposited = wbtcToken.balanceOf(address(dscEngine));
 
         uint256 wethValue = dscEngine.getUsdValue(weth, totalWethDeposited);
         uint256 wbtcValue = dscEngine.getUsdValue(wbtc, totalWbtcDeposited);
 
-        console2.log("In varian test wethValue: ", wethValue);
-        console2.log("In varian test wbtcValue: ", wbtcValue);
+        console2.log(
+            "In varian test wethValue: ",
+            wethValue,
+            weth,
+            totalWethDeposited
+        );
+        console2.log(
+            "In varian test wbtcValue: ",
+            wbtcValue,
+            wbtc,
+            totalWbtcDeposited
+        );
 
         console2.log("In varian test totalSupply: ", totalSupply);
-        console2.log("timesMintIsCalled is: ", handler.timesMintIsCalled());
+        console2.log(
+            "timesMintIsCalled is: ",
+            handler.timesMintIsCalled(),
+            handler.timesCollateralIsCalled()
+        );
 
         assert(wethValue + wbtcValue >= totalSupply);
     }

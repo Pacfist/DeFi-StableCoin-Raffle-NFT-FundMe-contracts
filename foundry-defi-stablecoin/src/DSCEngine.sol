@@ -7,6 +7,7 @@ import {AggregatorV3Interface} from "@chainlink/contracts/src/data-feeds/interfa
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {console2} from "forge-std/console2.sol";
+import {OracleLib} from "./OracleLib.sol";
 
 contract DSCEngine is ReentrancyGuard {
     event CollateralDeposited(
@@ -30,6 +31,8 @@ contract DSCEngine is ReentrancyGuard {
     error DSCEngine__MintFailed();
     error DSCEngine__HealthFactorOk();
     error DSCEngine__HealthFactorDoesNotImproved();
+
+    using OracleLib for AggregatorV3Interface;
 
     uint256 private constant LIQUIDATION_THRESHOLD = 50;
 
@@ -199,6 +202,8 @@ contract DSCEngine is ReentrancyGuard {
 
         uint256 hf = (adjCollateral * 1e18) / (totalDsc * 1e18);
 
+        console2.log("IN THE _HEALTHFACTOR hf is: ", hf);
+
         return hf;
     }
 
@@ -261,9 +266,15 @@ contract DSCEngine is ReentrancyGuard {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(
             s_tokenAddrsToPriceFeed[_token]
         );
-        (, int256 price, , , ) = priceFeed.latestRoundData();
-
+        (, int256 price, , , ) = priceFeed.staleCheckLatestRoundData();
+        console2.log("IN ENGINE IN GETUSDVAL PRICE: ", price);
         return ((uint256(price) * 1e10) * _amount) / 1e18;
+    }
+
+    function getCollateralTokenPriceFeed(
+        address token
+    ) external view returns (address) {
+        return s_tokenAddrsToPriceFeed[token];
     }
 
     function getTokenAmountFromUsd(
@@ -273,7 +284,7 @@ contract DSCEngine is ReentrancyGuard {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(
             s_tokenAddrsToPriceFeed[_token]
         );
-        (, int256 price, , , ) = priceFeed.latestRoundData();
+        (, int256 price, , , ) = priceFeed.staleCheckLatestRoundData();
         return ((_usdAmountWei * 1e18) / (uint256(price) * 1e10));
     }
 
