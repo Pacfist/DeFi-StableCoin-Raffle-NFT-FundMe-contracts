@@ -20,7 +20,7 @@ A Foundry workspace with several Solidity projects and tests:
 
 ## DeFi StableCoin (SCT) — Overview
 
-**Goal:** mint an ERC-20 stable coin against WETH/WBTC collateral with Chainlink USD feeds and a conservative risk policy.
+**Goal:** mint an ERC-20 stable coin against WETH/WBTC collateral with Chainlink USD feeds and conservative risk rules.
 
 ### Contracts
 
@@ -29,29 +29,45 @@ A Foundry workspace with several Solidity projects and tests:
   Owner-only `mint` and `burn` with basic input checks.
 
 - `DSCEngine.sol`  
-  Holds collateral, enforces a **50%** collateral factor, and tracks per-user debt.
+  Holds collateral and enforces risk limits.
   - Supported collateral: WETH, WBTC (addresses supplied at deploy)
   - Price feeds: Chainlink AggregatorV3 (8 decimals → scaled to 18)
-  - **Health factor:** `adjCollateralUSD / debtUSD`, where `adjCollateralUSD = collateralUSD * 50%`
-  - Liquidation:
-    - If HF < 1, third parties can repay debt and receive collateral plus **10%** bonus.
   - Core flows:
     - `depositCollateral(token, amount)` → pulls tokens via `transferFrom`
-    - `mintDsc(amount)` → mints SCT up to the 50% cap
+    - `mintDsc(amount)` → mints SCT up to the cap
     - `burnDsc(amount)` → repays debt
-    - `redeemCollateral(token, amount)` → withdraws collateral (HF check)
+    - `redeemCollateral(token, amount)` → withdraws collateral (health-factor check)
     - `depositCollateralAndMintDsc(token, amountCollateral, amountDsc)` → convenience
 
+### Risk parameters and liquidation
+
+| Parameter                       | Value / Rule |
+|---------------------------------|--------------|
+| Collateral factor (LTV)         | **50%** (you can mint up to 50% of your collateral USD value) |
+| Minimum collateralization       | **200%** (collateral / debt ≥ 2.0) |
+| Health factor (HF)              | `HF = (collateralUSD × 50%) / debtUSD` |
+| Liquidation threshold           | `HF < 1.0` (position can be liquidated) |
+| Liquidation bonus               | **10%** additional collateral to the liquidator |
+
+**Interpretation:** a position is considered safe while `HF ≥ 1.0`. With a 50% collateral factor, users must stay at or above **200% over-collateralization** to avoid liquidation.
+
+### “Algorithmic” mint/burn
+
+SCT supply is controlled by **rules in `DSCEngine`**:
+- Minting is permitted only within the 50% cap using live price feeds.
+- Burning reduces debt and raises HF.  
+This is “algorithmic” in the sense that issuance and redemption follow on-chain rules. It is **not** an uncollateralized or seigniorage system.
+
 **Price math**  
-Feeds return 8-decimals; `getUsdValue()` scales by `1e10` so all USD math uses 18 decimals.
+Feeds return 8 decimals; `getUsdValue()` scales by `1e10` so all USD math uses 18 decimals.
 
 ### Deploy script
 
 - `script/DeployEngine.s.sol`
   - Builds arrays of collateral and price feeds
   - Deploys `StableCoin` and `DSCEngine`
-  - Transfers SCT ownership to the engine
-  - Uses a public owner key that switches by chain ID (Sepolia vs local)
+  - Transfers SCT ownership to the engine (engine becomes the minter)
+  - Picks a public owner address by chain ID (Sepolia vs local)
 
 ---
 
