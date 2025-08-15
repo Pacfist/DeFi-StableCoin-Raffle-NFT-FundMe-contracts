@@ -46,7 +46,7 @@ contract DSCEngine is ReentrancyGuard {
     StableCoin private immutable i_dsc;
 
     modifier moreThenZero(uint256 _amount) {
-        if (_amount < 0) {
+        if (_amount == 0) {
             revert DSCEngine__AmountNeedsMoreThenZero();
         }
         _;
