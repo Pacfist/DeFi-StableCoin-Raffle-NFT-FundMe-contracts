@@ -189,7 +189,7 @@ contract EngineTest is Test {
         vm.startPrank(USER);
         wethToken.mint(USER, 100e18);
         wethToken.approve(address(dscEngine), 1000);
-        vm.expectRevert(StableCoin.StableCoint__MustBeMoreThanZero.selector);
+        vm.expectRevert(DSCEngine.DSCEngine__AmountNeedsMoreThenZero.selector);
         dscEngine.depositCollateralAndMintDsc(weth, 0, 0);
         vm.stopPrank();
     }

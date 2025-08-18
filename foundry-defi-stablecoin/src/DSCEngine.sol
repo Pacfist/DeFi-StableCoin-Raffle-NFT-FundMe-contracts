@@ -186,7 +186,7 @@ contract DSCEngine is ReentrancyGuard {
         ) = _getAccountInformation(_user);
 
         if (totalDsc == 0) {
-            return type(uint256).max; // no debt -> maximally safe
+            return type(uint256).max;
         }
 
         console2.log("-------------------");
