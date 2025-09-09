@@ -13,8 +13,8 @@ contract MerkleAirdrop {
     event Claim(address account, uint256 amount);
 
     bytes32 private immutable i_merkleRoot;
-
     IERC20 private immutable i_airdropToken;
+
     mapping(address claimer => bool claime) private s_hasClaimed;
 
     constructor(bytes32 merkleRoot, IERC20 airdropToken) {
@@ -41,5 +41,13 @@ contract MerkleAirdrop {
         s_hasClaimed[account] = true;
         emit Claim(account, amount);
         i_airdropToken.safeTransfer(account, amount);
+    }
+
+    function getMerkleRoot() public view returns (bytes32) {
+        return i_merkleRoot;
+    }
+
+    function getAirDropToken() public view returns (IERC20) {
+        return i_airdropToken;
     }
 }
